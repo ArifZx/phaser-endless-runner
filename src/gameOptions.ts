@@ -13,7 +13,7 @@ export default {
 
   playerStartPosition: 150,
 
-  playerGravity: 900,
+  playerGravity: 980,
 
-  jumpForce: 450,
+  jumpForce: 600,
 }

@@ -1,11 +1,16 @@
 import "phaser";
-import GameOption from "./gameOptions";
 import gameOptions from "./gameOptions";
+import { InfinityBackground } from "./background";
 export class GameScene extends Phaser.Scene {
   addedPlatform: number;
   nextPlatformDistance: number;
   platformGroup: Phaser.GameObjects.Group;
   platformPool: Phaser.GameObjects.Group;
+
+  skyGroup: Phaser.GameObjects.Group;
+
+  spikeGroup: Phaser.GameObjects.Group;
+  spikePool: Phaser.GameObjects.Group;
 
   player: Phaser.Physics.Arcade.Sprite;
   playerJump: number;
@@ -22,11 +27,18 @@ export class GameScene extends Phaser.Scene {
     this.nextPlatformDistance = 0;
     this.addedPlatform = 0;
     this.speed = 30;
-    this.maxSpeed = 30;
+    this.maxSpeed = 800;
   }
 
   create(data): void {
+    const { width, height } = this.game.config;
     this.addedPlatform = 0;
+
+    this.skyGroup = this.add.group({
+      removeCallback: sky => {
+        this.skyGroup.add(sky);
+      }
+    });
 
     this.platformGroup = this.add.group({
       removeCallback: platform => {
@@ -40,22 +52,21 @@ export class GameScene extends Phaser.Scene {
       }
     });
 
-    const { width, height } = this.game.config;
+    this.spikeGroup = this.add.group({
+      removeCallback: spike => {
+        this.spikePool.add(spike);
+      }
+    });
+
+    this.spikePool = this.add.group({
+      removeCallback: spike => {
+        this.spikeGroup.add(spike);
+      }
+    });
+
+    this.addSky();
+    this.addSky();
     this.addPlatform(width, (width as number) / 2, (height as number) * 0.95);
-
-    this.input.keyboard.on("keyup-UP", event => {
-      this.maxSpeed += 10;
-      console.log("max speed", this.maxSpeed);
-    });
-
-    this.input.keyboard.on("keyup-DOWN", event => {
-      this.maxSpeed -= 10;
-      console.log("max speed", this.maxSpeed);
-    });
-
-    this.input.keyboard.on("keydown-SPACE", event => {
-      this.jump();
-    });
 
     this.player = this.physics.add.sprite(
       gameOptions.playerStartPosition,
@@ -76,6 +87,32 @@ export class GameScene extends Phaser.Scene {
       null,
       this
     );
+
+    this.input.keyboard.on(
+      "keyup-UP",
+      event => {
+        this.maxSpeed += 10;
+        console.log("max speed", this.maxSpeed);
+      },
+      this
+    );
+
+    this.input.keyboard.on(
+      "keyup-DOWN",
+      event => {
+        this.maxSpeed -= 10;
+        console.log("max speed", this.maxSpeed);
+      },
+      this
+    );
+
+    this.input.keyboard.on(
+      "keydown-SPACE",
+      event => {
+        this.jump();
+      },
+      this
+    );
   }
 
   update(time: number, delta: number) {
@@ -83,12 +120,15 @@ export class GameScene extends Phaser.Scene {
     this.speed = this.maxSpeed
       ? Phaser.Math.Interpolation.Linear([this.speed, this.maxSpeed], 0.8)
       : 0.0;
-    let minDistance = (this.game.config.width as number) + this.maxSpeed + 300;
 
     if (!this.speed && this.player.anims.getCurrentKey() !== "idle") {
-      this.player.anims.play("idle")
-    } else if (this.speed && this.player.body.touching.down && this.player.anims.getCurrentKey() !== "run") {
-      this.player.anims.play("run")
+      this.player.anims.play("idle");
+    } else if (
+      this.speed &&
+      this.player.body.touching.down &&
+      this.player.anims.getCurrentKey() !== "run"
+    ) {
+      this.player.anims.play("run");
     }
 
     if (this.player.anims.getCurrentKey() === "run") {
@@ -105,10 +145,20 @@ export class GameScene extends Phaser.Scene {
 
     this.player.x = gameOptions.playerStartPosition;
 
+    this.skyGroup.getChildren().forEach(sky => {
+      if (sky.x < -sky.displayWidth * 0.5) {
+        sky.x =  sky.displayWidth * 1.5 - 1;
+      }
+      (sky.body as Phaser.Physics.Arcade.Body).setVelocityX(-this.speed * 0.3);
+    }, this);
+
+    let minDistance = (this.game.config.width as number) + this.maxSpeed + 300;
     this.platformGroup.getChildren().forEach(platform => {
       (platform.body as Phaser.Physics.Arcade.Body).setVelocityX(-this.speed);
       let platformDistance =
-        minDistance - platform.x - platform.displayWidth / 2;
+        (this.game.config.width as number) -
+        platform.x -
+        platform.displayWidth * 0.5;
       if (platformDistance < minDistance) {
         minDistance = platformDistance;
       }
@@ -122,11 +172,45 @@ export class GameScene extends Phaser.Scene {
       let nextPlatformWidth = this.game.config.width as number;
       let platformHeight = (this.game.config.height as number) * 0.95;
       this.addPlatform(
-        nextPlatformWidth * this.maxSpeed,
+        nextPlatformWidth + this.maxSpeed,
         nextPlatformWidth,
         platformHeight
       );
     }
+  }
+
+  addSky() {
+    let sky: Phaser.GameObjects.TileSprite;
+    const { width, height } = this.game.config;
+    console.log(this.skyGroup.getLength());
+    if (this.skyGroup.getLength() < 1) {
+      sky = this.add.tileSprite(
+        0,
+        height as number,
+        3072,
+        1536,
+        "sky"
+      );
+      sky.x = sky.x + sky.displayWidth * 0.5;
+    } else if (this.skyGroup.getLength() < 2) {
+      sky = this.add.tileSprite(
+        0,
+        height as number,
+        3072,
+        1536,
+        "sky"
+      );
+      sky.x = sky.x + sky.displayWidth * 1.5;
+    }
+    
+    if(sky) {
+      sky.tileScaleX = 1 / sky.scaleX;
+      this.physics.add.existing(sky);
+      (sky.body as Phaser.Physics.Arcade.Body).setImmovable(true);
+      this.skyGroup.add(sky);
+    }
+    console.log(sky.x);
+    console.log(sky.displayWidth);
   }
 
   addPlatform(width, x, y) {

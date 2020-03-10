@@ -6,6 +6,8 @@ export class PreloadScene extends Phaser.Scene {
   preload(): void {
     this.load.image("platform", "/assets/platformPack_tile001.png");
     this.load.image("spike", "/assets/platformPack_tile043.png");
+    this.load.image("sky", "/assets/layer_1.png");
+    this.load.image("mountain", "/assets/layer_2.png");
     this.load.spritesheet("player", "/assets/platformerPack_character.png", {
       frameWidth: 96,
       frameHeight: 96

@@ -1,11 +1,11 @@
-import "phaser"
+import "phaser";
 import { GameScene } from "./gameScene";
 import { PreloadScene } from "./preloadScene";
 const config: Phaser.Types.Core.GameConfig = {
   title: "Endless Runner",
   width: 800,
   height: 600,
-  parent: 'game',
+  parent: "game",
   scene: [PreloadScene, GameScene],
   physics: {
     default: "arcade",
@@ -13,8 +13,8 @@ const config: Phaser.Types.Core.GameConfig = {
       debug: false
     }
   },
-  backgroundColor: 0x0000ff
-}
+  backgroundColor: "#0ED1F1"
+};
 
 export class EndlessRunnerGame extends Phaser.Game {
   constructor(config: Phaser.Types.Core.GameConfig) {
