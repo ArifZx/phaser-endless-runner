@@ -1,10 +1,12 @@
 import "phaser"
+import { GameScene } from "./gameScene";
+import { PreloadScene } from "./preloadScene";
 const config: Phaser.Types.Core.GameConfig = {
   title: "Endless Runner",
   width: 800,
   height: 600,
   parent: 'game',
-  scene: [],
+  scene: [PreloadScene, GameScene],
   physics: {
     default: "arcade",
     arcade: {
