@@ -5,6 +5,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
   speed: number;
   initialX: number;
   currentMsPerFrame: number;
+  jumpSFX: Phaser.Sound.BaseSound;
 
   constructor(scene: Phaser.Scene, x, y) {
     super(scene, x, y, "player");
@@ -14,6 +15,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
     scene.add.existing(this);
     scene.physics.add.existing(this);
+    this.jumpSFX = scene.sound.add('jump_sfx');
 
     this.setGravityY(gameOptions.playerGravity);
     this.setFriction(0, 0);
@@ -58,6 +60,11 @@ class Player extends Phaser.Physics.Arcade.Sprite {
   jump() {
     if (this.body.touching.down) {
       this.setVelocityY(-gameOptions.jumpForce);
+      if(this.jumpSFX) {
+        this.jumpSFX.play({
+          loop: false,
+        })
+      }
     }
   }
 

@@ -2,6 +2,7 @@ import "phaser";
 import gameOptions from "../gameOptions";
 import Player from "../object/player";
 import Spike from "../object/spike";
+import { zeroAppend } from "../util";
 export class GameScene extends Phaser.Scene {
   addedPlatform: number;
   nextPlatformDistance: number;
@@ -15,7 +16,7 @@ export class GameScene extends Phaser.Scene {
   spikePool: Phaser.GameObjects.Group;
 
   highScore: number;
-  highScoreText: Phaser.GameObjects.Text;
+  score: number;
   scoreText: Phaser.GameObjects.Text;
   hintText: Phaser.GameObjects.Text;
   gameOverText: Phaser.GameObjects.Text;
@@ -116,10 +117,7 @@ export class GameScene extends Phaser.Scene {
         if (!this.isGameOver) {
           localStorage.setItem(
             "highScore",
-            Math.max(
-              this.highScore,
-              Math.floor((this.time.now - this.startTime) * 0.01)
-            ).toString()
+            Math.max(this.highScore, this.score).toString()
           );
         }
         this.isGameOver = true;
@@ -133,11 +131,6 @@ export class GameScene extends Phaser.Scene {
       fill: "#000"
     });
 
-    this.highScoreText = this.add.text(16, 16, `Hi: ${this.highScore}`, {
-      fontSize: "48px",
-      fill: "#000"
-    });
-
     this.gameOverText = this.add.text(0, 0, `Game Over\nUse 'R' for restart`, {
       fontSize: "48px",
       fill: "#000",
@@ -145,7 +138,7 @@ export class GameScene extends Phaser.Scene {
     });
 
     this.gameOverText.setPosition(
-      ((width as number) - this.gameOverText.displayWidth ) * 0.5,
+      ((width as number) - this.gameOverText.displayWidth) * 0.5,
       ((height as number) - this.gameOverText.displayHeight) * 0.5
     );
 
@@ -176,6 +169,10 @@ export class GameScene extends Phaser.Scene {
     );
 
     this.input.keyboard.on("keydown-SPACE", this.player.jump, this.player);
+    this.input.on('pointerdown', () => {
+      this.player.jump();
+    });
+    
   }
 
   paused() {
@@ -220,13 +217,11 @@ export class GameScene extends Phaser.Scene {
       this.player.die();
       this.gameOverText.setAlpha(1);
     } else {
-      this.gameOverText.setAlpha(0)
-      this.highScoreText.setText(`Hi:${this.highScore}`);
-      this.scoreText.setText(
-        Math.floor((time - this.startTime) * 0.01).toString()
-      );
-      this.scoreText.x =
-        (this.game.config.width as number) - this.scoreText.displayWidth - 16;
+      this.gameOverText.setAlpha(0);
+
+      if (this.score != Math.floor((time - this.startTime) * 0.01)) {
+        this.score = Math.floor((time - this.startTime) * 0.01);
+      }
 
       if (this.seconds != Math.floor(time * 0.001)) {
         this.seconds =
@@ -290,6 +285,12 @@ export class GameScene extends Phaser.Scene {
         );
       }
     }
+
+    this.scoreText.setText(
+      `Hi:${zeroAppend(this.highScore)}  ${zeroAppend(this.score)}`
+    );
+    this.scoreText.x =
+      (this.game.config.width as number) - this.scoreText.displayWidth - 16;
   }
 
   initializeSky() {

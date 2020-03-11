@@ -12,6 +12,8 @@ export class PreloadScene extends Phaser.Scene {
       frameWidth: 96,
       frameHeight: 96
     });
+
+    this.load.audio("jump_sfx", ["/assets/Jump.mp3", "/assets/Jump.ogg"]);
   }
 
   create(): void {
