@@ -1,9 +1,9 @@
 import "phaser";
-import { GameScene } from "./gameScene";
-import { PreloadScene } from "./preloadScene";
+import { GameScene } from "./scene/gameScene";
+import { PreloadScene } from "./scene/preloadScene";
 const config: Phaser.Types.Core.GameConfig = {
   title: "Endless Runner",
-  width: 800,
+  width: 1024,
   height: 600,
   parent: "game",
   scene: [PreloadScene, GameScene],
@@ -13,6 +13,8 @@ const config: Phaser.Types.Core.GameConfig = {
       debug: false
     }
   },
+  type: Phaser.AUTO,
+  zoom: 1,
   backgroundColor: "#0ED1F1"
 };
 
